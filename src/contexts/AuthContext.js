@@ -19,11 +19,13 @@ export function AuthProvider({ children }) {
   const [requestSuccess, setLoadingSuccessData] = useState() 
   const [requestError, setRequestError] = useState()
   const [currentUser, setCurrentUser] = useState() 
+ 
    
   var loggedInUser
  
 
   useEffect(() => {
+
     const loggedInUser = localStorage.getItem("appuser");
     setLoadingSuccessData()
     if (loggedInUser) {
@@ -36,6 +38,8 @@ export function AuthProvider({ children }) {
       }
      
     }
+
+    getApplication()
 
     console.log("AuthContext loggedInUser ", loggedInUser)
     
@@ -179,6 +183,42 @@ export function AuthProvider({ children }) {
   }
 
 
+
+  async function loginAnonymous(handle, clear = true) {
+    try {
+
+      if(clear) localStorage.clear(); 
+
+      return await apiRequest("POST", "appuser/loginAnonymous", { handle: handle }, false)
+
+       
+    } catch (error) {
+      console.log(error)
+      return {error:error}
+    }
+  }
+
+
+  async function loginAnonymousComplete(assert) {
+    try {
+
+      let response = await apiRequest("POST", "appuser/loginAnonymousComplete", assert, false)
+
+      if (!response.error) {
+ 
+        localStorage.setItem('appuser', JSON.stringify(response));
+        setCurrentUser(response) 
+      } 
+
+      return response;
+
+    } catch (error) {
+      console.error(error)
+      return {error:error}
+    }
+  }
+
+
  
 
   async function updateProfile(displayName){
@@ -259,7 +299,8 @@ export function AuthProvider({ children }) {
     signupComplete,
     logout, 
     updateProfile,
-   
+    loginAnonymous,
+    loginAnonymousComplete
   }
 
   return (

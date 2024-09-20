@@ -3,12 +3,11 @@ import { Form, Button, Card, Alert, Spinner } from "react-bootstrap"
 import { useAuth } from "../contexts/AuthContext"
 import { Link, useNavigate } from "react-router-dom"  
 import {platformAuthenticatorIsAvailable, startAuthentication, startRegistration, browserSupportsWebAuthn} from '@simplewebauthn/browser';
-
- 
+import { v4 as uuid } from 'uuid'
 
 export default function Login() {
  
-  const { login, loginComplete, signupComplete, getApplication} = useAuth()
+  const { login, loginComplete, loginAnonymous, loginAnonymousComplete, signupComplete, application} = useAuth()
   const [error, setError] = useState("") 
   const [loading, setLoading] = useState(false) 
   const navigate = useNavigate() 
@@ -18,13 +17,35 @@ export default function Login() {
     if (!browserSupportsWebAuthn()) { 
       setError( 'It seems this browser does not support Passkey Authentication.');
       return;
-    } 
-
-    getApplication()
-
+    }  
   }, []); 
 
+  const handleAnonymousLogin = async () => {
+    if (!await platformAuthenticatorIsAvailable()) {
+      setError("Your device doesn't have Passkey Authenticator. Please use any security key device to register.") 
+      return;
+    }
 
+    let anonHandle = `ANON_${uuid()}`
+    let result = await loginAnonymous(anonHandle)
+
+    if(result.error){
+      setError(result.error.message)
+      return
+    }
+    let attResp = await startRegistration(result);
+      attResp.handle = anonHandle;
+      
+
+      let authn = await loginAnonymousComplete(attResp);
+      if (authn.error) {
+        setError(authn.error.message)
+      }
+      else { 
+        navigate("profile")
+      } 
+
+  }
  
   const handleSubmit = async () => {
 
@@ -92,6 +113,11 @@ export default function Login() {
                   </Button> :  
                   <Button disabled={loading} className="w-100 mt-3 button-radius" onClick={handleSubmit}>
                     Log In
+                  </Button>
+            }
+
+            {application.anonymousLoginEnabled &&  <Button disabled={loading} className="w-100 mt-3 button-radius" onClick={handleAnonymousLogin}>
+                    Log Anonymous
                   </Button>
             }
           </Form> 
