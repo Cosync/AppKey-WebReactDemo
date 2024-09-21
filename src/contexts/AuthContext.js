@@ -123,7 +123,7 @@ export function AuthProvider({ children }) {
 
 
   async function signupConfirm(handle, code) { 
-    return await apiRequest("POST", "appuser/signupConfirm", { handle: handle,  code:code }, false)  
+    return await apiRequest("POST", "appuser/signupConfirm", { handle: handle,  code:code }, true)  
   }
 
 
@@ -131,15 +131,13 @@ export function AuthProvider({ children }) {
   async function signupComplete(authData) {
     try { 
 
-      let response = await apiRequest("POST", "appuser/signupComplete", authData, false)
+      let response = await apiRequest("POST", "appuser/signupComplete", authData, true)
 
       if (!response.error){
         setCurrentUser(response)
         localStorage.setItem('appuser', JSON.stringify(response));
       } 
 
-     
-      
       return response;
 
     } catch (error) {
@@ -153,7 +151,7 @@ export function AuthProvider({ children }) {
 
       if(clear) localStorage.clear(); 
 
-      return await apiRequest("POST", "appuser/login", { handle: handle }, false)
+      return await apiRequest("POST", "appuser/login", { handle: handle }, true)
 
        
     } catch (error) {
@@ -166,7 +164,7 @@ export function AuthProvider({ children }) {
   async function loginComplete(assert) {
     try {
 
-      let response = await apiRequest("POST", "appuser/loginComplete", assert, false)
+      let response = await apiRequest("POST", "appuser/loginComplete", assert, true)
 
       if (!response.error) {
  
@@ -189,7 +187,7 @@ export function AuthProvider({ children }) {
 
       if(clear) localStorage.clear(); 
 
-      return await apiRequest("POST", "appuser/loginAnonymous", { handle: handle }, false)
+      return await apiRequest("POST", "appuser/loginAnonymous", { handle: handle }, true)
 
        
     } catch (error) {
@@ -202,7 +200,7 @@ export function AuthProvider({ children }) {
   async function loginAnonymousComplete(assert) {
     try {
 
-      let response = await apiRequest("POST", "appuser/loginAnonymousComplete", assert, false)
+      let response = await apiRequest("POST", "appuser/loginAnonymousComplete", assert, true)
 
       if (!response.error) {
  
@@ -222,7 +220,7 @@ export function AuthProvider({ children }) {
  
 
   async function updateProfile(displayName){
-    let response = await apiRequest("POST", "appuser/updateProfile", {displayName:displayName}, false)
+    let response = await apiRequest("POST", "appuser/updateProfile", {displayName:displayName}, true)
     if (!response.error){ 
       updateUserCache('displayName', displayName) 
     } 

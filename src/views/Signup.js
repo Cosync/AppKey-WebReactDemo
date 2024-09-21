@@ -12,7 +12,7 @@ export default function Signup() {
   const [error, setError] = useState("")
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false) 
-  const [confirm, setConfirm] = useState(false) 
+  const [confirm, setConfirm] = useState() 
   const [formData, setFormData] = useState({handle:"", displayName:""}) 
   const navigate = useNavigate() 
 
@@ -29,12 +29,18 @@ export default function Signup() {
 
   const cancelSignup = async () => {
     setError("")
-    setConfirm(false)
+    setConfirm()
   }
  
   const handleSubmit = async () => {
     setError("")
-    if(confirm){
+
+    if(!formData.displayName || !formData.handle){
+      setError("Please enter all fields")
+      return;
+    }
+
+    if(confirm){ 
       getRegisterChallenge()
       return
     }
@@ -44,7 +50,8 @@ export default function Signup() {
       setError(result.error.message)
     }
     else {
-      setConfirm(true)
+      setConfirm(result)
+      setMessage(result.message)
     }
   }
 
@@ -52,6 +59,11 @@ export default function Signup() {
 
   const getRegisterChallenge = async() => {
     try {  
+
+      if(!formData.code || !formData.handle){
+        setError("Please enter all fields")
+        return;
+      }
 
       let result = await signupConfirm(formData.handle, formData.code); 
       if (result.error) {
@@ -68,8 +80,7 @@ export default function Signup() {
         setError(authn.error.message)
       }
       else {
-        setMessage("Authenticator registered!") 
-        navigate("profile")
+        navigate("/profile")
       } 
 
     } catch (error) {
@@ -98,7 +109,7 @@ export default function Signup() {
       <Card className="text-center">
         <Card.Body>
           <h2 className="text-center mb-4 form-title">Sign Up</h2>
-          {message && <Alert color="info">  {message} </Alert>} 
+          {message && <Alert variant="info">  {message} </Alert>} 
           {error && <Alert variant="danger">{error}</Alert>}
 
           <Form >
@@ -113,7 +124,8 @@ export default function Signup() {
               <Form.Control type="text" value={formData.handle} name="handle" required className="small-text" onChange={onChangeForm}/>
             </Form.Group>
               
-            {confirm &&  <Form.Group id="code">
+            {confirm &&  <Form.Group id="code" >
+              
               <Form.Label className="gray-text">Code</Form.Label>
               <Form.Control type="text" value={formData.code} name="code" required className="small-text" onChange={onChangeForm}/>
             </Form.Group>

@@ -9,7 +9,7 @@ export default function Login() {
  
   const { login, loginComplete, loginAnonymous, loginAnonymousComplete, signupComplete, application} = useAuth()
   const [error, setError] = useState("") 
-  const [loading, setLoading] = useState(false) 
+  
   const navigate = useNavigate() 
   const [handle, setHandle] = useState("") 
 
@@ -53,12 +53,16 @@ export default function Login() {
       setError("Your device doesn't have Passkey Authenticator. Please use any security key device to register.") 
       return;
     }
+    if(!handle){
+      setError("Please enter user handle")
+      return;
+    }
 
     let result = await login(handle);
     if (result.error){
       setError(result.error.message)
     }
-    if(result.requireAddPasskey){
+    else if(result.requireAddPasskey){
       let attResp = await startRegistration(result);
       attResp.handle = handle;
       
@@ -68,10 +72,10 @@ export default function Login() {
         setError(authn.error.message)
       }
       else { 
-        navigate("profile")
+        navigate("/profile")
       } 
     }
-    else {
+    else if (result.challenge){
       let asseResp = await startAuthentication(result);
       asseResp.handle = handle; 
 
@@ -82,6 +86,9 @@ export default function Login() {
       else {  
         navigate("/profile")
       }
+    }
+    else {
+      setError("Invalid Data")
     }
 
   }
@@ -107,16 +114,11 @@ export default function Login() {
             </Form.Group>
               
 
-            {loading ? <Button variant="primary button-radius" disabled className="w-100 mt-3">
-                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"/>
-                    Loading...
-                  </Button> :  
-                  <Button disabled={loading} className="w-100 mt-3 button-radius" onClick={handleSubmit}>
+            <Button  className="w-100 mt-3 button-radius" onClick={handleSubmit}>
                     Log In
-                  </Button>
-            }
+            </Button>
 
-            {application.anonymousLoginEnabled &&  <Button disabled={loading} className="w-100 mt-3 button-radius" onClick={handleAnonymousLogin}>
+            {application.anonymousLoginEnabled &&  <Button  className="w-100 mt-3 button-radius" onClick={handleAnonymousLogin}>
                     Log Anonymous
                   </Button>
             }

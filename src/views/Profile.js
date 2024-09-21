@@ -10,7 +10,7 @@ export default function Profile() {
   const { updateProfile, logout, currentUser} = useAuth()
   const [error, setError] = useState("")
   const [message, setMessage] = useState("")
-  const [loading, setLoading] = useState(false) 
+ 
   const navigate = useNavigate() 
 
   const [displayName, setDisplayName] = useState("") 
@@ -21,6 +21,7 @@ export default function Profile() {
       let loggedInUser = JSON.parse(catche); 
       if (!loggedInUser || !loggedInUser.appUserId ) navigate("/login")
       else setDisplayName(loggedInUser.displayName)
+
     } catch (error) {
       navigate("/login")
     }
@@ -28,7 +29,7 @@ export default function Profile() {
 
   const handleLogout = async () => {
     logout()
-    navigate("login")
+    navigate("/login")
   }
  
   const handleSubmit = async () => { 
@@ -47,7 +48,7 @@ export default function Profile() {
         <Card.Body>
           {currentUser && <h2 className="text-center mb-4 form-title">Welcome {currentUser.displayName}</h2> }
          
-           
+          {message && <Alert variant="info">{message}</Alert>}
           {error && <Alert variant="danger">{error}</Alert>}
           <Form>
             <Form.Group id="displayName">
@@ -56,14 +57,9 @@ export default function Profile() {
             </Form.Group>
               
 
-            {loading ? <Button variant="primary button-radius" disabled className="w-100 mt-3">
-                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"/>
-                    Loading...
-                  </Button> :  
-                  <Button disabled={loading} className="w-100 mt-3 button-radius" onClick={handleSubmit}>
+            <Button className="w-100 mt-3 button-radius" onClick={handleSubmit}>
                     Update
-                  </Button>
-            }
+            </Button>
 
 
               <Button  className="w-100 mt-3 button-radius" onClick={handleLogout}>
