@@ -9,10 +9,10 @@ import { startRegistration, platformAuthenticatorIsAvailable, browserSupportsWeb
 export default function Signup() {
  
   const { signup, signupConfirm, signupComplete, getApplication} = useAuth()
-  const [error, setError] = useState("")
-  const [message, setMessage] = useState("")
+  const [error, setError] = useState()
+  const [message, setMessage] = useState()
   const [loading, setLoading] = useState(false) 
-  const [confirm, setConfirm] = useState() 
+  const [confirm, setConfirm] = useState(false) 
   const [formData, setFormData] = useState({handle:"", displayName:""}) 
   const navigate = useNavigate() 
 
@@ -41,7 +41,7 @@ export default function Signup() {
     }
 
     if(confirm){ 
-      getRegisterChallenge()
+      signupCompleteHandler()
       return
     }
 
@@ -50,34 +50,40 @@ export default function Signup() {
       setError(result.error.message)
     }
     else {
-      setConfirm(result)
-      setMessage(result.message)
-    }
-  }
-
-
-
-  const getRegisterChallenge = async() => {
-    try {  
-
-      if(!formData.code || !formData.handle){
-        setError("Please enter all fields")
-        return;
-      }
-
-      let result = await signupConfirm(formData.handle, formData.code); 
-      if (result.error) {
-        setError(result.error.message)
-        return
-      }
 
       let attResp = await startRegistration(result);
       attResp.handle = formData.handle;
       
 
-      let authn = await signupComplete(attResp);
+      let authn = await signupConfirm(attResp);
       if (authn.error) {
         setError(authn.error.message)
+        return
+      }
+      
+      setMessage(authn.message)
+      console.log("signupConfirm authn ", authn) 
+
+      setConfirm(true)
+      
+    }
+  }
+
+
+
+  const signupCompleteHandler = async() => {
+    try {  
+      setError()
+      setMessage()
+      
+      if(!formData.code || !formData.handle){
+        setError("Please enter all fields")
+        return;
+      } 
+
+      let confResult = await signupComplete(formData);
+      if (confResult.error) {
+        setError(confResult.error.message)
       }
       else {
         navigate("/profile")

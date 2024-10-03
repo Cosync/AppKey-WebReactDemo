@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
   const [requestSuccess, setLoadingSuccessData] = useState() 
   const [requestError, setRequestError] = useState()
   const [currentUser, setCurrentUser] = useState() 
- 
+  const [signupToken, setSignupToken] = useState() 
    
   var loggedInUser
  
@@ -63,6 +63,7 @@ export function AuthProvider({ children }) {
           };
 
           if (loggedInUser !== undefined) requestOptions.headers["access-token"] = loggedInUser["access-token"] 
+          else if (signupToken !== undefined) requestOptions.headers["signup-token"] = signupToken
           else requestOptions.headers["app-token"] = Config.APP_TOKEN
 
           if (method !== "GET" && method !== "DELETE"){
@@ -115,28 +116,31 @@ export function AuthProvider({ children }) {
   }
 
   async function signup(data) {
-
+    setSignupToken()
     return await apiRequest("POST", "appuser/signup", data, true)   
 
   }
 
 
 
-  async function signupConfirm(handle, code) { 
-    return await apiRequest("POST", "appuser/signupConfirm", { handle: handle,  code:code }, true)  
+  async function signupConfirm(attResp) { 
+    let result =  await apiRequest("POST", "appuser/signupConfirm", attResp, true)  
+    if(result['signup-token'] !== undefined) setSignupToken(result['signup-token'])
+    return result
   }
 
 
 
-  async function signupComplete(authData) {
+  async function signupComplete(data) {
     try { 
 
-      let response = await apiRequest("POST", "appuser/signupComplete", authData, true)
+      let response = await apiRequest("POST", "appuser/signupComplete", data, true)
 
       if (!response.error){
         setCurrentUser(response)
         localStorage.setItem('appuser', JSON.stringify(response));
-      } 
+        setSignupToken()
+      }
 
       return response;
 
@@ -263,6 +267,7 @@ export function AuthProvider({ children }) {
 
   function logout() { 
     setCurrentUser(); 
+    setSignupToken()
     localStorage.clear();
     return true;
   }
