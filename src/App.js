@@ -2,7 +2,7 @@
 import './App.css'; 
 import { Routes, Route } from "react-router-dom"  
 import Login from './views/Login';
-import logo from './assets/passclef_logo_h.svg' ;
+import logo from './assets/site_logo_h.svg' ;
 import Signup from './views/Signup';
 import { useAuth } from "./contexts/AuthContext"
 import { Modal, Spinner } from "react-bootstrap"
@@ -21,7 +21,7 @@ function App() {
         <div className="col-3"> </div>
         <div className="col-6">
           
-            <img src={logo} alt="PassClef Logo" width={170}/> 
+            <img src={logo} alt="AppKey Logo" width={170}/> 
  
             
             <Routes>
