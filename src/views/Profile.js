@@ -8,8 +8,7 @@ import { Link, useNavigate } from "react-router-dom"
 export default function Profile() {
  
   const { updateProfile, logout, currentUser} = useAuth()
-  const [error, setError] = useState("")
-  const [message, setMessage] = useState("")
+ 
  
   const navigate = useNavigate() 
 
@@ -48,23 +47,20 @@ export default function Profile() {
         <Card.Body>
           {currentUser && <h2 className="text-center mb-4 form-title">Welcome {currentUser.displayName}</h2> }
          
-          {message && <Alert variant="info">{message}</Alert>}
-          {error && <Alert variant="danger">{error}</Alert>}
+       
           <Form>
             <Form.Group id="displayName">
               <Form.Label className="gray-text">Display Name</Form.Label>
               <Form.Control type="text" value={displayName}  required className="small-text" onChange={onChangeValue}/>
             </Form.Group>
-              
 
             <Button className="w-100 mt-3 button-radius" onClick={handleSubmit}>
-                    Update
+              Update
             </Button>
 
-
-              <Button  className="w-100 mt-3 button-radius" onClick={handleLogout}>
-                Log Out
-              </Button>
+            <Button  className="w-100 mt-3 button-radius" onClick={handleLogout}>
+              Log Out
+            </Button>
 
           </Form> 
         </Card.Body>
