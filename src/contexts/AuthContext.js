@@ -115,6 +115,30 @@ export function AuthProvider({ children }) {
     if(!app.error) setApp(app)
   }
 
+
+
+  const validateInput = (value, login = true) => {
+    if (!value) return false;
+    else if (value === "") return false;
+    else if (login && application.userNamesEnabled) return true;
+    else if(application.handleType === "phone") return validatePhone(value);
+    else if(application.handleType === "email") return validateEmail(value);
+    else return true;
+}
+
+
+const validateEmail = (email) => {
+    return (email.indexOf("@") > 0 && email.indexOf(".") > 2 &&  email.indexOf(".") < email.length - 1)
+}
+
+
+const validatePhone = (phone) => {
+    
+    var regex  = /^\+[0-9\s]{8,16}$/;
+    let val = phone.match(regex);
+    return val;
+}
+
   async function signup(data) {
     setSignupToken()
     return await apiRequest("POST", "appuser/signup", data, true)   
@@ -290,6 +314,7 @@ export function AuthProvider({ children }) {
     requestSuccess,
     requestError,
     loading,
+    validateInput,
     getApplication,
     verify,
     verifyComplete,

@@ -7,7 +7,7 @@ import { v4 as uuid } from 'uuid'
 
 export default function Login() {
  
-  const { login, loginComplete, loginAnonymous, loginAnonymousComplete, signupComplete, application} = useAuth()
+  const { validateInput, login, loginComplete, loginAnonymous, loginAnonymousComplete, signupComplete, application} = useAuth()
   const [error, setError] = useState("") 
   
   const navigate = useNavigate() 
@@ -53,8 +53,8 @@ export default function Login() {
       setError("Your device doesn't have Passkey Authenticator. Please use any security key device to register.") 
       return;
     }
-    if(!handle){
-      setError("Please enter user handle")
+    if(!validateInput(handle)){
+      setError("Please enter a valid user handle")
       return;
     }
 

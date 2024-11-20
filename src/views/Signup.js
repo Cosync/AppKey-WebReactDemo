@@ -8,7 +8,7 @@ import { startRegistration, platformAuthenticatorIsAvailable, browserSupportsWeb
 
 export default function Signup() {
  
-  const { signup, signupConfirm, signupComplete, getApplication} = useAuth()
+  const { validateInput, signup, signupConfirm, signupComplete, getApplication} = useAuth()
   const [error, setError] = useState()
   const [message, setMessage] = useState()
   const [loading, setLoading] = useState(false) 
@@ -43,6 +43,11 @@ export default function Signup() {
     if(confirm){ 
       signupCompleteHandler()
       return
+    }
+
+    if(!validateInput(formData.handle, false)){
+      setError("Please enter a valid handle")
+      return;
     }
 
     let result = await signup(formData)
@@ -126,7 +131,7 @@ export default function Signup() {
             </Form.Group>
 
             <Form.Group id="email">
-              <Form.Label className="gray-text">Email</Form.Label>
+              <Form.Label className="gray-text">User Handle</Form.Label>
               <Form.Control type="text" value={formData.handle} name="handle" required className="small-text" onChange={onChangeForm}/>
             </Form.Group>
               
