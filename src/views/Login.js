@@ -122,6 +122,10 @@ export default function Login() {
                     Log Anonymous
                   </Button>
             }
+
+            { ( application.appleLoginEnabled || application.googleLoginEnabled) && <h4 className="text-center mb-4 form-title">Or </h4> }
+
+
           </Form> 
         </Card.Body>
       </Card>

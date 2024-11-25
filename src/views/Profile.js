@@ -7,36 +7,51 @@ import { Link, useNavigate } from "react-router-dom"
 
 export default function Profile() {
  
-  const { updateProfile, logout, currentUser} = useAuth()
+  const {updateProfile, logout, currentUser, application} = useAuth()
  
  
   const navigate = useNavigate() 
-
-  const [displayName, setDisplayName] = useState("") 
+  const [profileData, setProfileData] = useState({})  
+  const [showUserNameScreen, setShowUserNameScreen] = useState(false) 
 
   useEffect(() => {   
     try { 
       const catche = localStorage.getItem("appuser");
       let loggedInUser = JSON.parse(catche); 
       if (!loggedInUser || !loggedInUser.appUserId ) navigate("/login")
-      else setDisplayName(loggedInUser.displayName)
+      else{
+        setProfileData(loggedInUser)
+        if(application.userNamesEnabled && (!loggedInUser.userName || loggedInUser.userName === '' )) setShowUserNameScreen(true)
+      } 
+
 
     } catch (error) {
       navigate("/login")
     }
-  }, []); 
+  }, [currentUser]); 
+
+   
 
   const handleLogout = async () => {
     logout()
     navigate("/login")
   }
  
-  const handleSubmit = async () => { 
-    updateProfile(displayName) 
+  const handleSubmit = async (key) => { 
+
+    let result = await updateProfile(key, profileData[key]) 
+    if(key === 'userName' && !result.error){
+      setShowUserNameScreen(false)
+    }
   }
 
   const onChangeValue = async (evt) => {
-    setDisplayName(evt.target.value)
+
+    setProfileData({
+      ...profileData,
+      [evt.target.name] : evt.target.value
+    })
+ 
   }
  
  
@@ -46,17 +61,38 @@ export default function Profile() {
       <Card className="text-center">
         <Card.Body>
           {currentUser && <h2 className="text-center mb-4 form-title">Welcome {currentUser.displayName}</h2> }
-         
+
+          {application.userNamesEnabled && <h5 className="text-center mb-4 form-title">Username: {profileData.userName}</h5> }
        
           <Form>
             <Form.Group id="displayName">
               <Form.Label className="gray-text">Display Name</Form.Label>
-              <Form.Control type="text" value={displayName}  required className="small-text" onChange={onChangeValue}/>
+              <Form.Control type="text" value={profileData.displayName} name="displayName" required className="small-text" onChange={onChangeValue}/>
             </Form.Group>
 
-            <Button className="w-100 mt-3 button-radius" onClick={handleSubmit}>
-              Update
-            </Button>
+            {showUserNameScreen ?
+              <div>
+
+            
+                <Form.Group id="userName">
+                  <Form.Label className="gray-text">User Name</Form.Label>
+                  <Form.Control type="text" value={profileData.userName} name="userName"  required className="small-text" onChange={onChangeValue}/>
+                </Form.Group>
+
+                <Button className="w-100 mt-3 button-radius" onClick={ () => handleSubmit('userName')}>
+                  Update
+                </Button>
+
+              </div>
+              :
+            
+              <Button className="w-100 mt-3 button-radius" onClick={ () => handleSubmit('displayName')}>
+                Update
+              </Button>
+
+            }
+
+           
 
             <Button  className="w-100 mt-3 button-radius" onClick={handleLogout}>
               Log Out

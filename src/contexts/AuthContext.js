@@ -247,10 +247,10 @@ const validatePhone = (phone) => {
 
  
 
-  async function updateProfile(displayName){
-    let response = await apiRequest("POST", "appuser/updateProfile", {displayName:displayName}, true)
+  async function updateProfile(key, value){
+    let response = await apiRequest("POST", "appuser/updateProfile", {[key]:value}, true)
     if (!response.error){ 
-      updateUserCache('displayName', displayName) 
+      updateUserCache(key, value) 
     } 
 
     return response;
