@@ -6,6 +6,9 @@ import {platformAuthenticatorIsAvailable, startAuthentication, startRegistration
 import { v4 as uuid } from 'uuid'
 import {jwtDecode} from "jwt-decode";
 import { GoogleLogin } from '@react-oauth/google';
+import AppleSignin from 'react-apple-signin-auth';
+import { Config } from "../config/Config";
+
 
 export default function Login() {
  
@@ -150,6 +153,20 @@ export default function Login() {
   const errorMessage = (error) => {
       console.log('Google errorMessage error ', error);
   };
+
+
+  const appleResponseMessage = (response) => {
+    console.log('appleResponseMessage responseMessage  response', response); 
+
+   
+ 
+  };
+
+  const appleErrorMessage = (error) => {
+    console.log('appleErrorMessage responseMessage  error', error);  
+ 
+  };
+
  
   return (
     <>
@@ -160,6 +177,7 @@ export default function Login() {
           <h2 className="text-center mb-4 form-title">Log In</h2>
            
           {error && <Alert variant="danger">{error}</Alert>}
+
           <Form>
             <Form.Group id="email">
               <Form.Label className="gray-text">Email</Form.Label>
@@ -168,22 +186,54 @@ export default function Login() {
               
 
             <Button  className="w-100 mt-3 button-radius" onClick={handleSubmit}>
-                    Log In
+              Log In
             </Button>
 
-            {application.anonymousLoginEnabled &&  <Button  className="w-100 mt-3 button-radius" onClick={handleAnonymousLogin}>
-                    Log Anonymous
-                  </Button>
+            {application.anonymousLoginEnabled &&  <Button  className="w-100 mt-3 button-radius" onClick={handleAnonymousLogin}> Log Anonymous</Button>}
+
+            { ( application.appleLoginEnabled || application.googleLoginEnabled) && <h4 className="text-center mb-4 form-title mt-4"> OR </h4> }
+
+            { application.googleLoginEnabled && application.googleClientId && <GoogleLogin onSuccess={responseMessage} onError={errorMessage} /> }
+
+            { application.appleLoginEnabled && application.appleBundleId &&
+              <div className="w-100 button-radius">
+              <AppleSignin
+                /** Auth options passed to AppleID.auth.init() */
+                authOptions={{
+                  /** Client ID - eg: 'com.example.com' */
+                  clientId: 'io.appkey.appdemo',
+                  /** Requested scopes, seperated by spaces - eg: 'email name' */
+                  scope: 'email name',
+                  /** Apple's redirectURI - must be one of the URIs you added to the serviceID - the undocumented trick in apple docs is that you should call auth from a page that is listed as a redirectURI, localhost fails */
+                  redirectURI: Config.APPLE_REDIRECT_URL,
+                  /** State string that is returned with the apple response */
+                  state: 'state',
+                  /** Nonce */
+                  nonce: 'nonce',
+                  /** Uses popup auth instead of redirection */
+                  usePopup: true,
+                }} // REQUIRED
+                /** General props */
+                uiType="dark"
+                /** className */
+                className="w-100 mt-3 button-radius"
+                /** Removes default style tag */
+                noDefaultStyle={false}
+                /** Allows to change the button's children, eg: for changing the button text */
+                buttonExtraChildren="Login with Apple"
+                /** Extra controlling props */
+                /** Called upon signin success in case authOptions.usePopup = true -- which means auth is handled client side */
+                onSuccess={(response) => appleResponseMessage} // default = undefined
+                /** Called upon signin error */
+                onError={(error) => appleErrorMessage } // default = undefined
+                /** Skips loading the apple script if true */
+                skipScript={false} // default = undefined
+                 
+                  
+              />
+
+              </div>
             }
-
-            { ( application.appleLoginEnabled || application.googleLoginEnabled) && <h4 className="text-center mb-4 form-title">Or </h4> }
-
-            {application.googleLoginEnabled &&
-            <div>
-              <GoogleLogin onSuccess={responseMessage} onError={errorMessage} />
-               
-            </div>
-           }
 
           </Form> 
         </Card.Body>
