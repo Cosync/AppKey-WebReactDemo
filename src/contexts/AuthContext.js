@@ -109,6 +109,8 @@ export function AuthProvider({ children }) {
           setLoading(false)
       }
   }
+
+ 
  
   async function getApplication() {
     let app =  await apiRequest("GET", "appuser/app", null, false)   
@@ -173,6 +175,46 @@ const validatePhone = (phone) => {
     }
   }
  
+
+  async function socialLogin(token, provider) {
+    try { 
+
+      let response = await apiRequest("POST", "appuser/socialLogin", { token: token, provider:provider })
+      if (!response.error) {
+ 
+        localStorage.setItem('appuser', JSON.stringify(response));
+        setCurrentUser(response) 
+      } 
+
+      return response;
+       
+    } catch (error) {
+      console.log(error)
+      return {error:error}
+    }
+  }
+
+  async function socialSignup(token, handle, provider) {
+    try { 
+
+      let response = await apiRequest("POST", "appuser/socialSignup", { token: token, handle:handle, provider:provider })
+      if (!response.error) {
+ 
+        localStorage.setItem('appuser', JSON.stringify(response));
+        setCurrentUser(response) 
+      } 
+
+      return response;
+       
+    } catch (error) {
+      console.log(error)
+      return {error:error}
+    }
+  }
+
+
+  
+
 
   async function login(handle, clear = true) {
     try {
@@ -320,6 +362,8 @@ const validatePhone = (phone) => {
     verifyComplete,
     setLoadingSuccessData,
     setRequestError,
+    socialLogin,
+    socialSignup,
     login,  
     loginComplete,
     signup,
@@ -328,7 +372,8 @@ const validatePhone = (phone) => {
     logout, 
     updateProfile,
     loginAnonymous,
-    loginAnonymousComplete
+    loginAnonymousComplete,
+    
   }
 
   return (

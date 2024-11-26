@@ -70,9 +70,8 @@ export default function Profile() {
               <Form.Control type="text" value={profileData.displayName} name="displayName" required className="small-text" onChange={onChangeValue}/>
             </Form.Group>
 
-            {showUserNameScreen ?
-              <div>
-
+            {showUserNameScreen && profileData.loginProvider === 'handle' ?
+              <div> 
             
                 <Form.Group id="userName">
                   <Form.Label className="gray-text">User Name</Form.Label>
