@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react"
-import { Form, Button, Card, Alert, Spinner } from "react-bootstrap"
+import React, {useState, useEffect } from "react"
+import { Form, Button, Card, Alert } from "react-bootstrap"
 import { useAuth } from "../contexts/AuthContext"
 import { Link, useNavigate } from "react-router-dom"  
 import {platformAuthenticatorIsAvailable, startAuthentication, startRegistration, browserSupportsWebAuthn} from '@simplewebauthn/browser';
@@ -17,13 +17,17 @@ export default function Login() {
   const [googleUser, setGoogleUser] = useState() 
   const navigate = useNavigate() 
   const [handle, setHandle] = useState("") 
+ 
+
+ 
 
   useEffect(() => { 
     if (!browserSupportsWebAuthn()) { 
       setError( 'It seems this browser does not support Passkey Authentication.');
       return;
     }  
-  }, []); 
+
+  }, [ ]); 
 
 
 
@@ -32,6 +36,7 @@ export default function Login() {
     async function fetchData() { 
 
       console.log('fetchData googleUser ', googleUser)
+      
       let result = await socialLogin(googleUser.credential, 'google') 
       console.log('socialLogin user ', result)
       if(result.error && result.error.code === 603){
@@ -57,7 +62,9 @@ export default function Login() {
     if (googleUser && googleUser.credential) {  
       fetchData()
     }
-  }, [googleUser]); 
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [googleUser, navigate]); 
 
 
   const handleAnonymousLogin = async () => {
@@ -67,13 +74,13 @@ export default function Login() {
     }
 
     let anonHandle = `ANON_${uuid()}`
-    let result = await loginAnonymous(anonHandle)
+    let optionsJSON = await loginAnonymous(anonHandle)
 
-    if(result.error){
-      setError(result.error.message)
+    if(optionsJSON.error){
+      setError(optionsJSON.error.message)
       return
     }
-    let attResp = await startRegistration(result);
+    let attResp =  await startRegistration({ optionsJSON });
       attResp.handle = anonHandle;
       
 
@@ -103,7 +110,7 @@ export default function Login() {
       setError(result.error.message)
     }
     else if(result.requireAddPasskey){
-      let attResp = await startRegistration(result);
+      let attResp = await startRegistration({ optionsJSON:result });
       attResp.handle = handle;
       
 
@@ -116,7 +123,7 @@ export default function Login() {
       } 
     }
     else if (result.challenge){
-      let asseResp = await startAuthentication(result);
+      let asseResp = await startAuthentication({optionsJSON:result});
       asseResp.handle = handle; 
 
       let authn = await loginComplete(asseResp);
@@ -183,17 +190,28 @@ export default function Login() {
               <Form.Label className="gray-text">Email</Form.Label>
               <Form.Control type="text" value={handle} name="handle" required className="small-text" onChange={onChangeHandle}/>
             </Form.Group>
-              
 
-            <Button  className="w-100 mt-3 button-radius" onClick={handleSubmit}>
-              Log In
-            </Button>
+            <div className="w-100 text-center">
 
-            {application.anonymousLoginEnabled &&  <Button  className="w-100 mt-3 button-radius" onClick={handleAnonymousLogin}> Log Anonymous</Button>}
+              <Button  className="w-50 mt-3 button-radius" onClick={handleSubmit}>
+                Log In
+              </Button>
+            </div>
+            
+            <div className="w-100 text-center">
+            {application.anonymousLoginEnabled &&  <Button  className="w-50 mt-3 button-radius" onClick={handleAnonymousLogin}> Log Anonymous</Button>}
 
             { ( application.appleLoginEnabled || application.googleLoginEnabled) && <h4 className="text-center mb-4 form-title mt-4"> OR </h4> }
+           
+           
+            { application.googleLoginEnabled && application.googleClientId && 
+              <div className="w-100 text-center">
+                 <div style={{position: "relative", display: "flex", alignItems: "center" , justifyContent: "center" }}>
 
-            { application.googleLoginEnabled && application.googleClientId && <GoogleLogin onSuccess={responseMessage} onError={errorMessage} /> }
+                  <GoogleLogin onSuccess={responseMessage} onError={errorMessage} />
+                </div> 
+              </div> }
+
 
             { application.appleLoginEnabled && application.appleBundleId &&
               <div className="w-100 button-radius">
@@ -216,7 +234,7 @@ export default function Login() {
                 /** General props */
                 uiType="dark"
                 /** className */
-                className="w-100 mt-3 button-radius"
+                className="w-50 mt-3 button-radius"
                 /** Removes default style tag */
                 noDefaultStyle={false}
                 /** Allows to change the button's children, eg: for changing the button text */
@@ -234,7 +252,7 @@ export default function Login() {
 
               </div>
             }
-
+          </div>
           </Form> 
         </Card.Body>
       </Card>

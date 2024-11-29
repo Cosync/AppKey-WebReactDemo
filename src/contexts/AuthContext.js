@@ -1,7 +1,7 @@
 
  
  
-import React, { useContext, useState, useEffect } from "react"
+import React, { useRef, useContext, useState, useEffect } from "react"
 import { Config } from "../config/Config" 
  
 
@@ -20,50 +20,66 @@ export function AuthProvider({ children }) {
   const [requestError, setRequestError] = useState()
   const [currentUser, setCurrentUser] = useState() 
   const [signupToken, setSignupToken] = useState() 
-   
-  var loggedInUser
- 
+  const renderRef = useRef(false)  
 
   useEffect(() => {
 
-    const loggedInUser = localStorage.getItem("appuser");
-    setLoadingSuccessData()
-    if (loggedInUser) {
-      try {
-        const foundUser = JSON.parse(loggedInUser); 
-        setCurrentUser(foundUser)
- 
-      } catch (error) {
-        
+    if (renderRef.current === false){ 
+
+      
+      getApplication()
+
+      const loggedInUser = localStorage.getItem("appuser");
+      console.log("AuthContext loggedInUser ", loggedInUser)
+
+      setLoadingSuccessData()
+
+      if (loggedInUser) {
+
+        try {
+          const foundUser = JSON.parse(loggedInUser); 
+          setCurrentUser(foundUser)
+
+        } catch (error) {
+          console.log("AppDetail render error. ", error)
+        }
+      
       }
-     
-    }
 
-    getApplication()
-
-    console.log("AuthContext loggedInUser ", loggedInUser)
-    
+      return () => {
+          renderRef.current = true
+          console.log("AuthContext render clean up. ")
+      }
+    } 
+   
+   
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function apiRequest(method, path, data, showLoading = true, file){ 
 
-      const userCache = localStorage.getItem("appuser"); 
-    
-      if (userCache) {
-        loggedInUser = JSON.parse(userCache); 
-      }  
-
-      setRequestError(null)
-      if(showLoading) setLoading(true) 
-
+     
       try {
+
+        const userCache = localStorage.getItem("appuser");  
+        
+
+        const loggedInUser = JSON.parse(userCache);  
+
+      
+        console.log('apiRequest loggedInUser ', loggedInUser)
+
+        setRequestError(null)
+
+        if(showLoading) setLoading(true)  
+
           let requestOptions = {
               method: method || 'POST',
               headers: { } 
           };
 
-          if (loggedInUser !== undefined) requestOptions.headers["access-token"] = loggedInUser["access-token"] 
-          else if (signupToken !== undefined) requestOptions.headers["signup-token"] = signupToken
+          if (loggedInUser && loggedInUser !== undefined) requestOptions.headers["access-token"] = loggedInUser["access-token"] 
+          else if (signupToken && signupToken !== undefined) requestOptions.headers["signup-token"] = signupToken
           else requestOptions.headers["app-token"] = Config.APP_TOKEN
 
           if (method !== "GET" && method !== "DELETE"){
@@ -114,7 +130,7 @@ export function AuthProvider({ children }) {
  
   async function getApplication() {
     let app =  await apiRequest("GET", "appuser/app", null, false)   
-    if(!app.error) setApp(app)
+    if(app && !app.error) setApp(app)
   }
 
 
@@ -301,6 +317,7 @@ const validatePhone = (phone) => {
   function updateUserCache(key, value) {
 
     const loggedInUser = localStorage.getItem("appuser");
+
     if (loggedInUser) {
       try {
 

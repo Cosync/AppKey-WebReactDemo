@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { Form, Button, Card, Alert, Spinner } from "react-bootstrap"
 import { useAuth } from "../contexts/AuthContext"
 import { Link, useNavigate } from "react-router-dom" 
-import { startRegistration, platformAuthenticatorIsAvailable, browserSupportsWebAuthn} from '@simplewebauthn/browser';
+import { startRegistration, browserSupportsWebAuthn} from '@simplewebauthn/browser';
  
  
 
@@ -15,6 +15,7 @@ export default function Signup() {
   const [confirm, setConfirm] = useState(false) 
   const [formData, setFormData] = useState({handle:"", displayName:""}) 
   const navigate = useNavigate() 
+  const renderRef = useRef(false) 
 
   useEffect(() => { 
 
@@ -23,8 +24,15 @@ export default function Signup() {
       return;
     }
 
-    getApplication()
-  }, []); 
+    if (renderRef.current === false){
+      getApplication()
+      
+      return () => {
+        renderRef.current = true
+        console.log("AuthContext render clean up. ")
+      }
+    }
+  }, [getApplication]); 
 
 
   const cancelSignup = async () => {
@@ -56,7 +64,7 @@ export default function Signup() {
     }
     else {
 
-      let attResp = await startRegistration(result);
+      let attResp = await startRegistration({ optionsJSON:result });
       attResp.handle = formData.handle;
       
 

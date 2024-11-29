@@ -9,6 +9,7 @@ import { Modal, Spinner } from "react-bootstrap"
 import Profile from './views/Profile';
 
 const reload = () => window.location.reload();
+
 function App() {
 
   const { loading } = useAuth()

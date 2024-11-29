@@ -1,0 +1,18 @@
+{
+    "routes": [
+        {
+            "route": "/apple-app-site-association",
+            "rewrite": "/apple-app-site-association.json"
+        }
+    ],
+   "navigationFallback": {
+       "rewrite": "index.html",
+       "exclude": ["/static/media/*.{png,jpg,jpeg,gif,bmp}",   "/static/css/*"]
+    },
+    "mimeTypes": {
+        ".json": "text/json"
+    },
+    "platform": {
+        "apiRuntime": "node:20"
+    }
+}
