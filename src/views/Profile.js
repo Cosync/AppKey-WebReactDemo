@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Form, Button, Card } from "react-bootstrap"
+import { Form, Button, Card, Alert } from "react-bootstrap"
 import { useAuth } from "../contexts/AuthContext"
 import { useNavigate } from "react-router-dom"  
  
@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom"
 export default function Profile() {
  
   const {updateProfile, logout, currentUser, application} = useAuth()
- 
+  const [error, setError] = useState("") 
  
   const navigate = useNavigate() 
   const [profileData, setProfileData] = useState({})  
@@ -40,9 +40,15 @@ export default function Profile() {
   const handleSubmit = async (key) => { 
 
     let result = await updateProfile(key, profileData[key]) 
+    if(!result || result.error){
+      let message = result ? result.error.message : "Invalid Request";
+      setError(message)
+    }
+    
     if(key === 'userName' && !result.error){
       setShowUserNameScreen(false)
     }
+
   }
 
   const onChangeValue = async (evt) => {
@@ -62,8 +68,10 @@ export default function Profile() {
         <Card.Body>
           {currentUser && <h2 className="text-center mb-4 form-title">Welcome {currentUser.displayName}</h2> }
 
-          {application.userNamesEnabled && <h5 className="text-center mb-4 form-title">Username: {profileData.userName}</h5> }
-       
+          {profileData && profileData.loginProvider === "handle"  && application.userNamesEnabled && <h5 className="text-center mb-4 form-title">Username: {profileData.userName}</h5> }
+
+          {error && <Alert variant="danger">{error}</Alert>}
+
           <Form>
             <Form.Group id="displayName">
               <Form.Label className="gray-text">Display Name</Form.Label>

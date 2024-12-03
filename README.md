@@ -2,15 +2,7 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Step 1: Update your Application Config
-
-```
-1, Go to config folder
-2, Update your config varailable
-```
-
-
-## Step 2 Available Scripts
+## Available Scripts
 
 In the project directory, you can run:
 

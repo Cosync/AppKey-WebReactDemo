@@ -1,15 +1,14 @@
 .App {
   text-align: center;
-  min-width: 300px !important;
-}
-
-.center { 
-  text-align: center; 
 }
 
 .App-logo {
   height: 40vmin;
   pointer-events: none;
+} 
+
+.center { 
+  text-align: center; 
 }
 
 @media (prefers-reduced-motion: no-preference) {

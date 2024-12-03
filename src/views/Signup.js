@@ -64,7 +64,7 @@ export default function Signup() {
     }
     else {
 
-      let attResp = await startRegistration({ optionsJSON:result });
+      let attResp = await startRegistration({ optionsJSON : result});
       attResp.handle = formData.handle;
       
 
@@ -175,7 +175,7 @@ export default function Signup() {
       </Card>
       <div className="w-100 text-center mt-2"> 
 
-        <h6 className="mt-20 gray-light"> ALREADY HAVE AN ACCOUNT? <Link to="/login" className="white-link">LOGIN</Link> </h6>
+        <h6 className="mt-20 gray-light"> ALREADY HAVE AN ACCOUNT? <Link to="/" className="white-link">LOGIN</Link> </h6>
       </div>
     </>
   )

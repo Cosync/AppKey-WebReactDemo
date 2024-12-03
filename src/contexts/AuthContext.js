@@ -131,6 +131,8 @@ export function AuthProvider({ children }) {
   async function getApplication() {
     let app =  await apiRequest("GET", "appuser/app", null, false)   
     if(app && !app.error) setApp(app)
+      
+    return app;
   }
 
 
@@ -306,7 +308,10 @@ const validatePhone = (phone) => {
  
 
   async function updateProfile(key, value){
-    let response = await apiRequest("POST", "appuser/updateProfile", {[key]:value}, true)
+    let response;
+    if(key === 'userName') response = await apiRequest("POST", "appuser/setUserName", {'userName':value}, true)
+    else response = await apiRequest("POST", "appuser/updateProfile", {'displayName':value}, true)
+  
     if (!response.error){ 
       updateUserCache(key, value) 
     } 
