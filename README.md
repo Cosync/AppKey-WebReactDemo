@@ -2,7 +2,19 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## Step 1 
+
+```
+1, Go to the config folder
+2, Update your config variables
+3, If you want Apple Login, update index.html in the public folder for APPLE_WEB_SERVICE_ID and WEBSITE_URL
+
+``` 
+## Step 2 
+
+### `npm install`
+
+## Step 3 
 
 In the project directory, you can run:
 
