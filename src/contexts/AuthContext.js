@@ -3,6 +3,7 @@
  
 import React, { useRef, useContext, useState, useEffect } from "react"
 import { Config } from "../config/Config" 
+import AppKeyWebAuthn from "appkey-webauthn"
  
 
 const AuthContext = React.createContext()
@@ -22,12 +23,12 @@ export function AuthProvider({ children }) {
   const [signupToken, setSignupToken] = useState() 
   const renderRef = useRef(false)  
 
+  const appKeyAuth = new AppKeyWebAuthn({appToken: Config.APP_TOKEN, apiUrl:Config.REST_API}).getInstance();
+
   useEffect(() => {
 
-    if (renderRef.current === false){ 
-
+    if (renderRef.current === false){  
       
-      getApplication()
 
       const loggedInUser = localStorage.getItem("appuser");
       console.log("AuthContext loggedInUser ", loggedInUser)
@@ -39,6 +40,7 @@ export function AuthProvider({ children }) {
         try {
           const foundUser = JSON.parse(loggedInUser); 
           setCurrentUser(foundUser)
+          appKeyAuth.auth.user = foundUser;
 
         } catch (error) {
           console.log("AppDetail render error. ", error)
@@ -56,68 +58,94 @@ export function AuthProvider({ children }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function apiRequest(method, path, data, showLoading = true, file){ 
+  async function apiRequest(func, data, showLoading = true, file){ 
 
-     
       try {
 
         const userCache = localStorage.getItem("appuser");  
-        
+        const loggedInUser = JSON.parse(userCache);
 
-        const loggedInUser = JSON.parse(userCache);  
-
-      
         console.log('apiRequest loggedInUser ', loggedInUser)
 
         setRequestError(null)
 
         if(showLoading) setLoading(true)  
+        let result;
 
-          let requestOptions = {
-              method: method || 'POST',
-              headers: { } 
-          };
+        console.log('apiRequest func ', func)
+        console.log('apiRequest data ', data)
+        switch (func) {
+          case 'app':
+            result = await appKeyAuth.app.getApplication()
+            break;
 
-          if (loggedInUser && loggedInUser !== undefined) requestOptions.headers["access-token"] = loggedInUser["access-token"] 
-          else if (signupToken && signupToken !== undefined) requestOptions.headers["signup-token"] = signupToken
-          else requestOptions.headers["app-token"] = Config.APP_TOKEN
+          case 'signup':
+            result = await appKeyAuth.auth.signup(data)
+            break;
+          case 'signupConfirm':
+            result = await appKeyAuth.auth.signupConfirm(data) 
+            break;
+          case 'signupComplete':
+            result = await appKeyAuth.auth.signupComplete(data)
+            let user = appKeyAuth.auth.user;
+            console.log('signupComplete user ', user)
 
-          if (method !== "GET" && method !== "DELETE"){
-              requestOptions.body = JSON.stringify(data)
-          }
+            break;
+          case 'login':
+              result = await appKeyAuth.auth.login(data)
+              break;
+          case 'loginComplete':
+              result = await appKeyAuth.auth.loginComplete(data)
+              break;
+          case 'socialLogin':
+            result = await appKeyAuth.auth.socialLogin(data)
+            break;
+          case 'socialSignup':
+            result = await appKeyAuth.auth.socialSignup(data)
+            break;
+          case 'loginAnonymous':
+            result = await appKeyAuth.auth.loginAnonymous(data)
+            break;
+          case 'loginAnonymousComplete':
+            result = await appKeyAuth.auth.loginAnonymousComplete(data)
+            break;
+          case 'userNameAvailable':
+              result = await appKeyAuth.profile.userNameAvailable(data)
+              break; 
+          case 'setUserName':
+            result = await appKeyAuth.profile.setUserName(data)
+            break; 
+          case 'updateProfile':
+            result = await appKeyAuth.profile.updateProfile(data)
+            break;
+            
+          case 'verify':
+            result = await appKeyAuth.auth.verify(data)
+            break;
           
+          case 'verifyComplete':
+            result = await appKeyAuth.auth.verifyComplete(data)
+            break;
+              
 
-          if (file) {
-            const formData = new FormData();  
-            formData.append('file', file); 
-            requestOptions.body = formData
-          }
-          else {
-            requestOptions.headers['Content-Type'] = 'application/json'     
-          }
+          default:
+            break;
+        } 
 
-          let endpoint = `${Config.REST_API}/api/${path}`
-
-          console.log("apiRequest endpoint ", endpoint)
-
-          const response = await fetch(endpoint, requestOptions); 
-          let result = await response.json();
-
-          console.log("apiRequest result ", result)
-          
-          if (response.status !== 200){
-              setRequestError(result);
-              if(result.code === 405) logout()
-              console.log("apiRequest setRequestError ", result)
-              return {error:result}
-          } 
-          else{
-              return result;
-          } 
+        console.log("apiRequest result ", result)
+        
+        if (result && result.code){
+            setRequestError(result);
+            if(result.code === 405) logout() 
+            return {error:result}
+        } 
+        else{
+            return result;
+        } 
 
 
       } catch (error) {
-           console.log("apiRequest error ", error)
+          console.log("apiRequest error ", error)
           setRequestError(error)
           return {error:error}
       }
@@ -129,7 +157,7 @@ export function AuthProvider({ children }) {
  
  
   async function getApplication() {
-    let app =  await apiRequest("GET", "appuser/app", null, false)   
+    let app =  await apiRequest("app", null, false)   
     if(app && !app.error) setApp(app)
       
     return app;
@@ -161,14 +189,14 @@ const validatePhone = (phone) => {
 
   async function signup(data) {
     setSignupToken()
-    return await apiRequest("POST", "appuser/signup", data, true)   
+    return await apiRequest("signup", data, true)   
 
   }
 
 
 
   async function signupConfirm(attResp) { 
-    let result =  await apiRequest("POST", "appuser/signupConfirm", attResp, true)  
+    let result =  await apiRequest("signupConfirm", attResp, true)  
     if(result['signup-token'] !== undefined) setSignupToken(result['signup-token'])
     return result
   }
@@ -177,8 +205,8 @@ const validatePhone = (phone) => {
 
   async function signupComplete(data) {
     try { 
-
-      let response = await apiRequest("POST", "appuser/signupComplete", data, true)
+      data.signupToken = signupToken;
+      let response = await apiRequest("signupComplete", data, true)
 
       if (!response.error){
         setCurrentUser(response)
@@ -197,7 +225,7 @@ const validatePhone = (phone) => {
   async function socialLogin(token, provider) {
     try { 
 
-      let response = await apiRequest("POST", "appuser/socialLogin", { token: token, provider:provider })
+      let response = await apiRequest("socialLogin",  { token: token, provider:provider })
       if (!response.error) {
  
         localStorage.setItem('appuser', JSON.stringify(response));
@@ -215,7 +243,7 @@ const validatePhone = (phone) => {
   async function socialSignup(token, handle, provider) {
     try { 
 
-      let response = await apiRequest("POST", "appuser/socialSignup", { token: token, handle:handle, provider:provider })
+      let response = await apiRequest("socialSignup",  { token: token, handle:handle, provider:provider })
       if (!response.error) {
  
         localStorage.setItem('appuser', JSON.stringify(response));
@@ -239,7 +267,7 @@ const validatePhone = (phone) => {
 
       if(clear) localStorage.clear(); 
 
-      return await apiRequest("POST", "appuser/login", { handle: handle }, true)
+      return await apiRequest("login", { handle: handle }, true)
 
        
     } catch (error) {
@@ -252,7 +280,7 @@ const validatePhone = (phone) => {
   async function loginComplete(assert) {
     try {
 
-      let response = await apiRequest("POST", "appuser/loginComplete", assert, true)
+      let response = await apiRequest("loginComplete", assert, true)
 
       if (!response.error) {
  
@@ -275,7 +303,7 @@ const validatePhone = (phone) => {
 
       if(clear) localStorage.clear(); 
 
-      return await apiRequest("POST", "appuser/loginAnonymous", { handle: handle }, true)
+      return await apiRequest("loginAnonymous", { handle: handle }, true)
 
        
     } catch (error) {
@@ -288,7 +316,7 @@ const validatePhone = (phone) => {
   async function loginAnonymousComplete(assert) {
     try {
 
-      let response = await apiRequest("POST", "appuser/loginAnonymousComplete", assert, true)
+      let response = await apiRequest("loginAnonymousComplete", assert, true)
 
       if (!response.error) {
  
@@ -309,8 +337,8 @@ const validatePhone = (phone) => {
 
   async function updateProfile(key, value){
     let response;
-    if(key === 'userName') response = await apiRequest("POST", "appuser/setUserName", {'userName':value}, true)
-    else response = await apiRequest("POST", "appuser/updateProfile", {'displayName':value}, true)
+    if(key === 'userName') response = await apiRequest("setUserName", {'userName':value}, true)
+    else response = await apiRequest("updateProfile", {'displayName':value}, true)
   
     if (!response.error){ 
       updateUserCache(key, value) 
@@ -355,19 +383,22 @@ const validatePhone = (phone) => {
 
   function logout() { 
     setCurrentUser(); 
-    setSignupToken()
+    setSignupToken();
     localStorage.clear();
+
+    appKeyAuth.auth.logout();
+
     return true;
   }
   
 
-  const verify = async () => {
-    return await apiRequest("POST", `appuser/verify`, {}, true)  
+  const verify = async (handle) => {
+    return await apiRequest("verify", {handle:handle}, true)  
       
   }
 
   const verifyComplete = async (data) => {
-    return await apiRequest("POST", `appuser/verifyComplete`, data, true)   
+    return await apiRequest("verifyComplete", data, true)   
   }
 
   

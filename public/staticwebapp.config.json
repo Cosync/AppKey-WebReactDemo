@@ -1,8 +1,12 @@
 {
     "routes": [
         {
+            "route": "/.well-known/apple-app-site-association",
+            "rewrite": ".well-known/apple-app-site-association.json"
+        },
+        {
             "route": "/apple-app-site-association",
-            "rewrite": "/apple-app-site-association.json"
+            "rewrite": ".well-known/apple-app-site-association.json"
         }
     ],
    "navigationFallback": {
