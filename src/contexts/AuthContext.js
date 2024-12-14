@@ -74,6 +74,7 @@ export function AuthProvider({ children }) {
 
         console.log('apiRequest func ', func)
         console.log('apiRequest data ', data)
+        
         switch (func) {
           case 'app':
             result = await appKeyAuth.app.getApplication()
@@ -240,10 +241,10 @@ const validatePhone = (phone) => {
     }
   }
 
-  async function socialSignup(token, handle, provider) {
+  async function socialSignup(token, handle, provider, displayName) {
     try { 
 
-      let response = await apiRequest("socialSignup",  { token: token, handle:handle, provider:provider })
+      let response = await apiRequest("socialSignup",  { token: token, handle:handle, provider:provider, displayName:displayName })
       if (!response.error) {
  
         localStorage.setItem('appuser', JSON.stringify(response));
