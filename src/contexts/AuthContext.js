@@ -20,7 +20,7 @@ export function AuthProvider({ children }) {
   const [requestSuccess, setLoadingSuccessData] = useState() 
   const [requestError, setRequestError] = useState()
   const [currentUser, setCurrentUser] = useState() 
-  const [signupToken, setSignupToken] = useState() 
+   
   const renderRef = useRef(false)  
 
   const appKeyAuth = new AppKeyWebAuthn({appToken: Config.APP_TOKEN, apiUrl:Config.REST_API}).getInstance();
@@ -77,14 +77,14 @@ export function AuthProvider({ children }) {
         
         switch (func) {
           case 'app':
-            result = await appKeyAuth.app.getApplication()
+            result = await appKeyAuth.app.getApp()
             break;
 
           case 'signup':
             result = await appKeyAuth.auth.signup(data)
             break;
           case 'signupConfirm':
-            result = await appKeyAuth.auth.signupConfirm(data) 
+            result = await appKeyAuth.auth.signupConfirm(data.handle, data) 
             break;
           case 'signupComplete':
             result = await appKeyAuth.auth.signupComplete(data)
@@ -96,7 +96,7 @@ export function AuthProvider({ children }) {
               result = await appKeyAuth.auth.login(data)
               break;
           case 'loginComplete':
-              result = await appKeyAuth.auth.loginComplete(data)
+              result = await appKeyAuth.auth.loginComplete(data.handle, data)
               break;
           case 'socialLogin':
             result = await appKeyAuth.auth.socialLogin(data)
@@ -108,7 +108,7 @@ export function AuthProvider({ children }) {
             result = await appKeyAuth.auth.loginAnonymous(data)
             break;
           case 'loginAnonymousComplete':
-            result = await appKeyAuth.auth.loginAnonymousComplete(data)
+            result = await appKeyAuth.auth.loginAnonymousComplete(data.handle, data)
             break;
           case 'userNameAvailable':
               result = await appKeyAuth.profile.userNameAvailable(data)
@@ -119,15 +119,21 @@ export function AuthProvider({ children }) {
           case 'updateProfile':
             result = await appKeyAuth.profile.updateProfile(data)
             break;
-            
+          case 'getAppUser':
+              result = await appKeyAuth.profile.getAppUser()
+               
+              break;
           case 'verify':
             result = await appKeyAuth.auth.verify(data)
             break;
           
           case 'verifyComplete':
-            result = await appKeyAuth.auth.verifyComplete(data)
+            result = await appKeyAuth.auth.verifyComplete(data.handle, data)
             break;
               
+          case 'verifySocialAccount':
+            result = await appKeyAuth.auth.verifySocialAccount(data)
+            break;
 
           default:
             break;
@@ -164,7 +170,14 @@ export function AuthProvider({ children }) {
     return app;
   }
 
-
+  async function  getAppUser() {
+    let user =  await apiRequest("getAppUser", null, false)   
+    if(user && !user.error) {
+      localStorage.setItem('appuser', JSON.stringify(user));
+      setCurrentUser(user) 
+    }
+    return user;
+  }
 
   const validateInput = (value, login = true) => {
     if (!value) return false;
@@ -189,7 +202,8 @@ const validatePhone = (phone) => {
 }
 
   async function signup(data) {
-    setSignupToken()
+    
+    data.handle = data.handle.toLowerCase();
     return await apiRequest("signup", data, true)   
 
   }
@@ -197,8 +211,7 @@ const validatePhone = (phone) => {
 
 
   async function signupConfirm(attResp) { 
-    let result =  await apiRequest("signupConfirm", attResp, true)  
-    if(result['signup-token'] !== undefined) setSignupToken(result['signup-token'])
+    let result =  await apiRequest("signupConfirm", attResp, true)   
     return result
   }
 
@@ -206,13 +219,13 @@ const validatePhone = (phone) => {
 
   async function signupComplete(data) {
     try { 
-      data.signupToken = signupToken;
+      
       let response = await apiRequest("signupComplete", data, true)
 
       if (!response.error){
         setCurrentUser(response)
         localStorage.setItem('appuser', JSON.stringify(response));
-        setSignupToken()
+        
       }
 
       return response;
@@ -267,7 +280,7 @@ const validatePhone = (phone) => {
     try {
 
       if(clear) localStorage.clear(); 
-
+      handle = handle.toLowerCase();
       return await apiRequest("login", { handle: handle }, true)
 
        
@@ -384,7 +397,7 @@ const validatePhone = (phone) => {
 
   function logout() { 
     setCurrentUser(); 
-    setSignupToken();
+   
     localStorage.clear();
 
     appKeyAuth.auth.logout();
@@ -394,7 +407,7 @@ const validatePhone = (phone) => {
   
 
   const verify = async (handle) => {
-    return await apiRequest("verify", {handle:handle}, true)  
+    return await apiRequest("verify", {handle:handle.toLowerCase()}, true)  
       
   }
 
@@ -412,6 +425,7 @@ const validatePhone = (phone) => {
     loading,
     validateInput,
     getApplication,
+    getAppUser,
     verify,
     verifyComplete,
     setLoadingSuccessData,
