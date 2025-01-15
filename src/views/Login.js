@@ -13,7 +13,7 @@ import { Config } from "../config/Config";
 
 export default function Login() {
  
-  const { validateInput, login, loginComplete, loginAnonymous, loginAnonymousComplete, signupComplete, application, getApplication, socialSignup, socialLogin, logout} = useAuth()
+  const {currentUser, validateInput, login, loginComplete, loginAnonymous, loginAnonymousComplete, signupComplete, application, getApplication, socialSignup, socialLogin, logout} = useAuth()
   const [error, setError] = useState("") 
   const [loading, setLoading] = useState(false)  
 
@@ -134,18 +134,20 @@ export default function Login() {
     async function fetchApp() {
       let app = await getApplication()
       if (app) setAppData(app)
+
+      if(currentUser && currentUser['access-token']) navigate("/profile")
     }
    
 
     if (!initialized.current) { 
-      logout()
+      //logout()
       initialized.current = true
       fetchApp() 
     }
 
      
     
-  }, [getApplication, logout]);
+  }, [getApplication, logout, currentUser, navigate]);
  
 
   async function submitSocialLogin(token, provider){
@@ -196,26 +198,31 @@ export default function Login() {
       return;
     }
 
-    let anonHandle = `ANON_${uuid()}`
-    let result = await loginAnonymous(anonHandle)
+    try {
+      
+      
+      let anonHandle = `ANON_${uuid()}`
+      let result = await loginAnonymous(anonHandle)
 
-    if(result.error){
-      setError(result.error.message)
-      return
+      if(result.error){
+        setError(result.error.message)
+        return
+      }
+
+      console.log("handleAnonymousLogin result ", result);
+
+      let attResp = await startRegistration({ optionsJSON:result }); 
+      attResp.handle = anonHandle
+      let authn = await loginAnonymousComplete(attResp);
+      if (authn.error) {
+        setError(authn.error.message)
+      }
+      else { 
+        navigate("/profile")
+      } 
+    } catch (error) {
+      setError(error.message)
     }
-
-    console.log("handleAnonymousLogin result ", result);
-
-    let attResp = await startRegistration({ optionsJSON:result }); 
-    attResp.handle = anonHandle
-    let authn = await loginAnonymousComplete(attResp);
-    if (authn.error) {
-      setError(authn.error.message)
-    }
-    else { 
-      navigate("/profile")
-    } 
-
   }
  
   const handleLoginSubmit = async () => {
@@ -263,7 +270,8 @@ export default function Login() {
         setError("Invalid Data")
       }
     } catch (error) {
-        console.log(error)
+      setError(error.message)
+      console.log(error)
     }
 
   }

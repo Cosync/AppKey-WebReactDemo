@@ -8,7 +8,7 @@ import { startRegistration, browserSupportsWebAuthn} from '@simplewebauthn/brows
 
 export default function Signup() {
  
-  const { validateInput, signup, signupConfirm, signupComplete, getApplication} = useAuth()
+  const { validateInput, signup, signupConfirm, signupComplete, logout} = useAuth()
   const [error, setError] = useState()
   const [message, setMessage] = useState()
   const [loading, setLoading] = useState(false) 
@@ -25,14 +25,15 @@ export default function Signup() {
     }
 
     if (renderRef.current === false){
-      getApplication()
-      
+     
+      logout()
+
       return () => {
         renderRef.current = true
         console.log("AuthContext render clean up. ")
       }
     }
-  }, [getApplication]); 
+  }, [logout]); 
 
 
   const cancelSignup = async () => {
