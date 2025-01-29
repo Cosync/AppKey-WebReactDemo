@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
         try {
           const foundUser = JSON.parse(loggedInUser); 
           setCurrentUser(foundUser)
-          appKeyAuth.auth.user = foundUser;
+          appKeyAuth.user = foundUser;
 
         } catch (error) {
           console.log("AppDetail render error. ", error)
@@ -66,14 +66,15 @@ export function AuthProvider({ children }) {
         const loggedInUser = JSON.parse(userCache);
 
         console.log('apiRequest loggedInUser ', loggedInUser)
+        console.log('apiRequest appKeyAuth.user ', appKeyAuth.apiService.user)
 
         setRequestError(null)
 
         if(showLoading) setLoading(true)  
         let result;
-
+        
         console.log('apiRequest func ', func)
-        console.log('apiRequest data ', data)
+        console.log('apiRequest data ', data) 
         
         switch (func) {
           case 'app':
@@ -135,6 +136,19 @@ export function AuthProvider({ children }) {
             result = await appKeyAuth.auth.verifySocialAccount(data)
             break;
 
+          case 'addPasskey':
+            result = await appKeyAuth.passkey.addPasskey(data)
+            break;
+          case 'addPasskeyComplete':
+              result = await appKeyAuth.passkey.addPasskeyComplete(data)
+              break;
+          case 'updatePasskey':
+              result = await appKeyAuth.passkey.updatePasskey(data)
+              break;
+          case 'removePasskey':
+            result = await appKeyAuth.passkey.removePasskey(data)
+            break;
+  
           default:
             break;
         } 
@@ -395,6 +409,50 @@ const validatePhone = (phone) => {
   }
  
 
+  async function addPasskey(data){
+    try {
+      
+      let response = await apiRequest("addPasskey", data, true) 
+      return response;
+    } catch (error) {
+      return {error:error}
+    }
+   
+  }
+
+  
+  async function addPasskeyComplete(attest){
+    try {
+      let response = await apiRequest("addPasskeyComplete", attest, true) 
+      return response;
+    } catch (error) {
+      return {error:error}
+    }
+   
+  }
+
+
+  async function updatePasskey(keyId, keyName){
+    try {
+      let response = await apiRequest("updatePasskey",{keyId:keyId, keyName:keyName}, true) 
+      return response;
+    } catch (error) {
+      return {error:error}
+    } 
+  }
+
+
+  async function removePasskey(keyId){
+    try {
+      let response = await apiRequest("removePasskey",{keyId:keyId}, true) 
+      return response;
+    } catch (error) {
+      return {error:error}
+    }  
+  }
+
+ 
+
   function logout() { 
     setCurrentUser(); 
    
@@ -441,7 +499,11 @@ const validatePhone = (phone) => {
     updateProfile,
     loginAnonymous,
     loginAnonymousComplete,
-    
+    addPasskey,
+    addPasskeyComplete,
+    updatePasskey,
+    removePasskey
+
   }
 
   return (

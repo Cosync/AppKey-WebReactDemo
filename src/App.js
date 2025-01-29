@@ -8,7 +8,7 @@ import Signup from './views/Signup';
 import { useAuth } from "./contexts/AuthContext"
 import { Modal, Spinner, Row, Col } from "react-bootstrap"
 import Profile from './views/Profile';
-
+import 'bootstrap-icons/font/bootstrap-icons.css';
 const reload = () => window.location.reload();
 
 function App() {
