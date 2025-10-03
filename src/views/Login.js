@@ -167,7 +167,7 @@ export default function Login() {
           }
           console.log("submitSocialLogin userData ", userData.current)
 
-          const result = await socialSignup(token, userData.current.email, provider, `${userData.current.firstName} ${userData.current.lastName}`)
+          const result = await socialSignup(token, userData.current.email, provider, userData.current.firstName, userData.current.lastName)
           if (result.error) {
             if (result.error.message) setError(`Whoop! ${result.error.message}`)
             else setError(`Whoop! ${result.error}`)

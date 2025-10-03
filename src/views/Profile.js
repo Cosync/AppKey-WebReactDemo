@@ -7,7 +7,7 @@ import { startRegistration, startAuthentication} from '@simplewebauthn/browser';
 
 export default function Profile() {
 
-  const { getAppUser, updateProfile, logout, currentUser, application, verify, verifyComplete, addPasskey, addPasskeyComplete, updatePasskey, removePasskey } = useAuth()
+  const { getAppUser, updateProfile, updateUserName, logout, currentUser, application, verify, verifyComplete, addPasskey, addPasskeyComplete, updatePasskey, removePasskey } = useAuth()
   const [error, setError] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
   const [modalState, setModalState] = useState({ editKey: false, deleteKey: false, verify: false })
@@ -65,8 +65,10 @@ export default function Profile() {
   }
 
   const handleSubmit = async (key) => {
-
-    let result = await updateProfile(key, profileData[key])
+    let result = {}
+    
+    if (key === 'userName') result = await updateUserName(profileData.userName)
+    else result = await updateProfile(profileData)
     
     if (!result || result.error) {
       let message = result ? result.error.message : "Invalid Request";
@@ -246,7 +248,7 @@ export default function Profile() {
             <h6 className="mt-20 gray-light">Success! You’ve Logged into the AppKey Demo. Congratulations on using your passkey—how simple was that? No passwords, no MFA, no cheat sheets—just effortless, secure login. Sign up for AppKey today to bring this seamless passwordless authentication to your mobile or web app!</h6>
           </div>
 
-          {currentUser && <h2 className="text-center mb-4 form-title">Welcome {currentUser.displayName}</h2>}
+          {currentUser && <h2 className="text-center mb-4 form-title">Welcome {currentUser.firstName} {currentUser.lastName}</h2>}
 
           {profileData && profileData.loginProvider === "handle" && application.userNamesEnabled && <h5 className="text-center mb-4 form-title">Username: {profileData.userName}</h5>}
 
@@ -258,10 +260,17 @@ export default function Profile() {
           
 
           <Form>
-            <Form.Group as={Row} className="mb-3" id="displayName">
-              <Form.Label column sm={3} className="gray-text">Display Name</Form.Label>
+            <Form.Group as={Row} className="mb-3" id="firstName">
+              <Form.Label column sm={3} className="gray-text">First Name</Form.Label>
               <Col sm={9}>
-                <Form.Control type="text" value={profileData.displayName} name="displayName" required className="small-text" onChange={onChangeValue} />
+                <Form.Control type="text" value={profileData.firstName} name="firstName" required className="small-text" onChange={onChangeValue} />
+              </Col>
+            </Form.Group>
+
+             <Form.Group as={Row} className="mb-3" id="lastName">
+              <Form.Label column sm={3} className="gray-text">Last Name</Form.Label>
+              <Col sm={9}>
+                <Form.Control type="text" value={profileData.lastName} name="lastName" required className="small-text" onChange={onChangeValue} />
               </Col>
             </Form.Group>
 
@@ -283,7 +292,7 @@ export default function Profile() {
               </div>
               :
 
-              <Button className="w-100 mt-3 button-radius" onClick={() => handleSubmit('displayName')}>
+              <Button className="w-100 mt-3 button-radius" onClick={() => handleSubmit('name')}>
                 Update
               </Button>
 

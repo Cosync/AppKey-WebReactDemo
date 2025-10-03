@@ -268,10 +268,10 @@ const validatePhone = (phone) => {
     }
   }
 
-  async function socialSignup(token, handle, provider, displayName) {
+  async function socialSignup(token, handle, provider, firstName, lastName) {
     try { 
 
-      let response = await apiRequest("socialSignup",  { token: token, handle:handle, provider:provider, displayName:displayName })
+      let response = await apiRequest("socialSignup",  { token: token, handle:handle, provider:provider, firstName:firstName, lastName:lastName })
       if (!response.error) {
  
         localStorage.setItem('appuser', JSON.stringify(response));
@@ -360,14 +360,20 @@ const validatePhone = (phone) => {
     }
   }
 
+  async function updateUserName(value){
+    
+    let response = await apiRequest("setUserName", {'userName':value}, true) 
+    if (!response.error){ 
+      updateUserCache(key, value) 
+    } 
 
+    return response;
+  }
  
 
-  async function updateProfile(key, value){
-    let response;
-    if(key === 'userName') response = await apiRequest("setUserName", {'userName':value}, true)
-    else response = await apiRequest("updateProfile", {'displayName':value}, true)
-  
+  async function updateProfile(data){
+    let response = await apiRequest("updateProfile", data, true);
+     
     if (!response.error){ 
       updateUserCache(key, value) 
     } 
@@ -497,6 +503,7 @@ const validatePhone = (phone) => {
     signupComplete,
     logout, 
     updateProfile,
+    updateUserName,
     loginAnonymous,
     loginAnonymousComplete,
     addPasskey,

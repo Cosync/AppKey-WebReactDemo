@@ -13,7 +13,7 @@ export default function Signup() {
   const [message, setMessage] = useState()
   const [loading, setLoading] = useState(false) 
   const [confirm, setConfirm] = useState(false) 
-  const [formData, setFormData] = useState({handle:"", displayName:""}) 
+  const [formData, setFormData] = useState({handle:"", firstName:"", lastName:""}) 
   const navigate = useNavigate() 
   const renderRef = useRef(false) 
 
@@ -44,7 +44,7 @@ export default function Signup() {
   const handleSubmit = async () => {
     setError("")
 
-    if(!formData.displayName || !formData.handle){
+    if(!formData.firstName || !formData.lastName || !formData.handle){
       setError("Please enter all fields")
       return;
     }
@@ -144,9 +144,14 @@ export default function Signup() {
 
               <Form >
 
-                <Form.Group id="name">
-                  <Form.Label className="gray-text">Display Name</Form.Label>
-                  <Form.Control type="text" value={formData.displayName} name="displayName" required className="small-text" onChange={onChangeForm}/>
+                <Form.Group id="firstname">
+                  <Form.Label className="gray-text">First Name</Form.Label>
+                  <Form.Control type="text" value={formData.firstName} name="firstName" required className="small-text" onChange={onChangeForm}/>
+                </Form.Group>
+
+                 <Form.Group id="lastname">
+                  <Form.Label className="gray-text">Last Name</Form.Label>
+                  <Form.Control type="text" value={formData.firstName} name="lastName" required className="small-text" onChange={onChangeForm}/>
                 </Form.Group>
 
                 <Form.Group id="email">
